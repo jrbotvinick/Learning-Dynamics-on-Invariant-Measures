@@ -1,6 +1,6 @@
 # Learning-Dynamics-on-Invariant-Measures-Using-PDE-Constrained-Optimization
 
-This repository is contains code which can be used to learn the an autonomous vector field from trajectory data by solving a PDE-constrained optimization problem [1]. The approach is expected to be particularly helpful when the inference trajectory is sampled slowly and the Lagrangian velocity is difficult to approximate. Here is a summary of the relevant files: 
+This repository is contains code which can be used to learn an autonomous vector field from trajectory data by solving a PDE-constrained optimization problem [1]. The approach is expected to be particularly helpful when the inference trajectory is sampled slowly and the Lagrangian velocity is difficult to approximate. Here is a summary of the relevant files: 
 
 - `example.ipynb`: Contains an example of our approach where the velocity is paramaterized by global polynomials and the Van der Pol oscillator's vector field is inverted from an observed invariant measure.
 
