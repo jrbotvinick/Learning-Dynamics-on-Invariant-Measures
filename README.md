@@ -10,9 +10,12 @@ The following video demonstrates the process of learning the Van der Pol oscilla
 
 
 
-https://user-images.githubusercontent.com/100333155/236525946-4e5c9d08-cbc5-4afc-85af-3e552fe730d0.mp4
 
 
+
+
+
+https://user-images.githubusercontent.com/100333155/236526309-67c79299-2420-41f5-b98a-ca2c0a41c393.mp4
 
 
 
