@@ -4,7 +4,7 @@ This repository is contains code which can be used to learn an autonomous vector
 
 - `example.ipynb`: This file contains an example of our approach in which the unkown velocity is paramaterized by global polynomials and the Van der Pol oscillator's vector field is inverted from an observed invariant measure.
 
-- `Comparison`: This folder contains code for our approach with a neural network paramaterization of the velocity. The folder also contains code for the SINDy [2] and Neural ODE [3] approaches for learning dynamics from trajectory data, which can be used to reproduce the comparisons in [1]. 
+- `Comparison`: This folder contains code for our approach with a neural network paramaterization of the velocity. The folder also contains code for the SINDy [2] and Neural ODE [3] approaches for learning dynamics from trajectory data. These files can be used to reproduce the comparisons in [1]. 
 
 The following video demonstrates the process of learning the Van der Pol oscillator's velocity from a polynomial basis using only the invariant measure as inference data. It can be reproduced in the `example.ipynb` file.
 
