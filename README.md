@@ -24,4 +24,4 @@ https://user-images.githubusercontent.com/100333155/236526309-67c79299-2420-41f5
 [2] https://www.pnas.org/doi/10.1073/pnas.1517384113 \
 [3] https://arxiv.org/abs/1806.07366
 
-We thank Dr. Chen Li for his help combining the neural network parametrization with the gradient computation from the adjoint state method.
+We thank Dr. Chen Li for his helpful suggestions and for sharing code which combines the gradient calculation from the adjoint state method with the neural network backproppagation. 
