@@ -449,15 +449,7 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
                 
         if k % 1000 == 0:
             print('Iteration', k,'|', 'Cost:',loss.detach().numpy(), '|', 'Tol:', costs[-1]/costs[0])
-            plt.plot(costs)
-            plt.yscale('log')
-            plt.show()
-            _,Peq,_,_ = FWD(G,bounds)
-            plt.imshow(Peq.reshape(nx,ny,order = 'F').T,origin = 'lower',aspect = 'auto')
-            plt.show()
-            # if np.abs(costs[-1]/costs[0])< G['tol']:
-            #     G['end'] = True
-    
+          
     
         if k%G['plotevery'] == 0 and k!= 0:
             _,Peq,_,_ = FWD(G,bounds)
