@@ -11,6 +11,13 @@ from scipy.ndimage import gaussian_filter
 
 NAMES = ['samples_slow.p','samples_fast.p']
 cc = 0
+
+np.random.seed(1329) #1329 from before
+SEEDS = []
+for i in range(10):
+    s = np.random.randint(int(10**6))
+    SEEDS.append(s)
+    
 for NAME in NAMES:  
     with open(NAME, "rb") as f:
         ys_true = pickle.load(f)
@@ -51,10 +58,10 @@ for NAME in NAMES:
         N_costs = []
         O_times = []
         N_times = []
-        for i in range(10):
-    
-            ys,ts = traj_NODE(TIME,NAME)
-            ys2,ts2 = traj_ours(TIME,NAME)
+        for i in range(0,10):
+            seed = SEEDS[i]
+            ys2,ts2 = traj_ours(TIME,NAME,seed)
+            ys,ts = traj_NODE(TIME,NAME,seed)
             TRAJS1.append(ys[:int(1e5)])
             TRAJS2.append(ys2[:int(1e5)])
             P1,_ = bin_traj(ys)
@@ -70,8 +77,7 @@ for NAME in NAMES:
             print(N_costs)
             print(O_costs)
             
-            
-        with open('EXP_INFO {}'.format(cc), "wb") as f:
+        with open('EXP_INFO {}'.format(cc), "wb") as f: 
                pickle.dump([O_costs,N_costs,O_times,N_times], f)
         with open('EXP_TRAJS {}'.format(cc), "wb") as f:
                pickle.dump([TRAJS1,TRAJS2], f)   
