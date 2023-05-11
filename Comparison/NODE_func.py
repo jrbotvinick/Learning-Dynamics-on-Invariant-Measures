@@ -1,6 +1,6 @@
 #Code adapted from https://github.com/rtqichen/torchdiffeq/blob/master/examples/ode_demo.py
 
-def traj_NODE(TIME,name):
+def traj_NODE(TIME,name,seed):
     
     import os
     import argparse
@@ -88,10 +88,7 @@ def traj_NODE(TIME,name):
             return self.net(y)
     
     
-    
-    
-
-
+    torch.manual_seed(seed)
     func = ODEFunc().to(device)
     optimizer = optim.Adam(func.parameters(), lr=1e-3)
     start = time.time()
@@ -106,7 +103,7 @@ def traj_NODE(TIME,name):
         if itr == 1:
             loss0 = loss
         loss.backward()
-        if itr%100 == 0:
+        if itr%1000 == 0:
             print('Iter {:04d} | Total Loss Tol {:.6f}'.format(itr, loss.item()/loss0))
 
         optimizer.step()
