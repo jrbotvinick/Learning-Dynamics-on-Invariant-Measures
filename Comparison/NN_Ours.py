@@ -1,6 +1,6 @@
 
 
-def traj_ours(TIME,name):#input the desired wall clock training time and the name of the trajectory file to learn
+def traj_ours(TIME,name,seed):#input the desired wall clock training time and the name of the trajectory file to learn
     
     
     ###########################################################
@@ -67,9 +67,9 @@ def traj_ours(TIME,name):#input the desired wall clock training time and the nam
     'inverse_crime': False,
     'rescale': 1, #factor by which to rescale parameters after inversion
     'initialguess': [1e-2,'constant'], #initial guess for velocities, string can be 'constant', 'noise', 'gauss', or 'shifted'
-    'TSMax': 1e5, #number of steps for plotting dynamics
+    'TSMax': 1e2, #number of steps for plotting dynamics
     'interp': 'linear', #how to interpolate reconstructed parameter for plotting dynamics
-    'filtering': 0, #standard deviation of gaussian kernel for filtering
+    'filtering': 2, #standard deviation of gaussian kernel for filtering
     'maxfuniters': 100, #max number of function evals in each iteration
     'numiter': 100000000, #total number of iterations
     'plotevery': 1000000, #how often to plot updates (no plots saved if > numiters)
@@ -113,7 +113,7 @@ def traj_ours(TIME,name):#input the desired wall clock training time and the nam
     Peq_true, edges = np.histogramdd(ys , range = hist_bounds, bins = [G['nx'],G['ny']],normed=True)
     Peq_true = Peq_true/sum(Peq_true.flatten())
     from scipy.ndimage import gaussian_filter
-    Peq_true = gaussian_filter(Peq_true,sigma =  1.5)
+    Peq_true = gaussian_filter(Peq_true,sigma =  G['filtering'])
     plt.imshow(Peq_true.T,origin = 'lower',aspect = 'auto')
     
     plt.show()
@@ -294,10 +294,6 @@ def traj_ours(TIME,name):#input the desired wall clock training time and the nam
         print('Plotting Dynamics')
         Vx, Vy = G['Vx'].copy(), G['Vy'].copy()
       
-        if G['invert_V1'] == True:
-            G['Vx'] = G['rescale']*gaussian_filter(G['Vx'], G['filtering'])
-        if G['invert_V2'] == True:
-            G['Vy'] = G['rescale']*gaussian_filter(G['Vy'], G['filtering'])
        
     
         TimeStepMax = G['TSMax']
@@ -324,11 +320,7 @@ def traj_ours(TIME,name):#input the desired wall clock training time and the nam
     def velocities(G):
         print('Plotting Inferred Parameter')
         Vx, Vy = G['Vx'].copy(), G['Vy'].copy()
-        if G['invert_V1'] == True:
-            G['Vx'] = G['rescale']*gaussian_filter(G['Vx'], G['filtering'])
-        if G['invert_V2'] == True:
-            G['Vy'] = G['rescale']*gaussian_filter(G['Vy'], G['filtering'])
-    
+      
         Np = 300
         Xp = np.linspace(bounds[0][0]+G['dx'],bounds[0][1]-G['dx'],Np)
         Yp = np.linspace(bounds[1][0]+G['dx'],bounds[1][1]-G['dx'],Np)
@@ -422,12 +414,10 @@ def traj_ours(TIME,name):#input the desired wall clock training time and the nam
     YY = torch.tensor(np.meshgrid(Xi_int[1:-1],Yf[1:-1],indexing='ij'), dtype = torch.float)
     YY = YY.reshape((2,len(Xi_int[1:-1])*len(Yf[1:-1])))
     
-            
+    torch.manual_seed(seed)
     net = network()
-    
     Vi = net(XX).detach().numpy()
     Vj = net(YY).detach().numpy()
-    
     G['Vx'], G['Vy'] = np.zeros((nx+1,ny+1)),np.zeros((nx+1,ny+1))
     
     def bin_traj(ys):
@@ -483,7 +473,7 @@ def traj_ours(TIME,name):#input the desired wall clock training time and the nam
         iters.append(k)
     
                 
-        if k % 100 == 0:
+        if k % 1000 == 0:
             print('Iteration', k,'|', 'Cost:',loss.detach().numpy(), '|', 'Tol:', costs[-1]/costs[0])
             if np.abs(costs[-1]/costs[0])< G['tol']:
                 G['end'] = True
