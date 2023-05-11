@@ -49,36 +49,18 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
     G = {
     "dt": .01, #timestep
     "dx": .1, #spatial discretization
-    'mu': .5,
-    'gamma': -1,
-    'lambda': -.1,
     'bounds': [[-4,4],[-5,5]], #bounds used in discretization
     "alpha": 1e-8, #teleportation parameter
     "diff": 1e-3, #diffusion parameter
     'Cost': 'KL',#cost function, can be L2,W2,KL
-    'param': 'NN',
-    'grad_scale': 1e-6,
-    'opt_method': 'L-BFGS-B', #type of optimization used by scipy.optimize
-    'nodes': 100,
-    'act': 'tanh',
-    'lr': 1e-3,
-    'invert_V1': True, #Decide whether to invert V1
-    'invert_V2': True, #Decide whether to invert V2
-    'inverse_crime': False,
-    'rescale': 1, #factor by which to rescale parameters after inversion
-    'initialguess': [1e-2,'constant'], #initial guess for velocities, string can be 'constant', 'noise', 'gauss', or 'shifted'
-    'TSMax': 1e2, #number of steps for plotting dynamics
-    'interp': 'linear', #how to interpolate reconstructed parameter for plotting dynamics
+    'nodes': 100, #number of nodes in NN
+    'act': 'tanh', #NN activation
+    'lr': 1e-3, #learning rate
+    'TSMax': 1e6, #number of steps for plotting dynamics
     'filtering': 2, #standard deviation of gaussian kernel for filtering
-    'maxfuniters': 100, #max number of function evals in each iteration
     'numiter': 100000000, #total number of iterations
     'plotevery': 1000000, #how often to plot updates (no plots saved if > numiters)
-    'plot': False,
-    'regularize': 0,
-    'Witer': 150,
-    'Wsize': 64,
-    'tol': .0001,
-    'NNweight' : 1,
+    'tol': .0001, #stopping tolerance
     'end': False,
     }
     ########################################################################
@@ -181,7 +163,8 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
         K_mat = K_mat.tocsr()
     
         # scale to positive
-        mnV = abs(K_mat.min(axis=0).min())       
+        mnV = abs(K_mat.min(axis=0).min())  
+        # print(mnV)
         N = K_mat.shape[0]
         speyeN = identity(N).tocsr()
         M = speyeN +(1/(2*mnV))*K_mat
@@ -301,12 +284,12 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
         ys = np.zeros((int(TimeStepMax),2))
         ys[0,:] = ys[0,:] = IC
         ysn = ys.copy()
-        tic = time()
-        noiseV = np.random.normal(0,1,int(2*TimeStepMax)).reshape((int(TimeStepMax),2))  
+        # tic = time()
+        # noiseV = np.random.normal(0,1,int(2*TimeStepMax)).reshape((int(TimeStepMax),2))  
         for timestep in range(1,int(TimeStepMax)): 
-            if timestep% int(TimeStepMax/10)==0:
-              toc = time()
-              print(f'time step: {timestep:4d} Elapsed time: {toc-tic:.2f}s')
+            # if timestep% int(TimeStepMax/10)==0:
+               # toc = time()
+              # print(f'time step: {timestep:4d} Elapsed time: {toc-tic:.2f}s')
             ## https://en.wikipedia.org/wiki/Euler%E2%80%93Maruyama_method
             # ys[timestep,:] = ys[timestep-1,:] + G["dt"]* RHS_NN(ys[timestep-1,:],G) +np.sqrt(2*G['diff']*G['dt'])*noiseV[timestep-1,:]
             ysn[timestep,:] = ysn[timestep-1,:] + G["dt"]* RHS_NN(ysn[timestep-1,:],G)  
@@ -345,7 +328,6 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
     
     
     
-    m_normal = normal.Normal(0, 1)
     
     
     relu = nn.ReLU()
@@ -358,14 +340,6 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
             return sig(z)
         if G['act'] == 'tanh':
             return torch.tanh(z)
-    
-    ####### Net parameters
-    learning_rate = G['lr']
-    D_in = 2
-    H1 = G['nodes']
-    D_out = 1
-    a = G['NNweight']
-    ######################
     
     
     #Network for V
@@ -437,7 +411,7 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
     total_history = []
     
     
-    opt = torch.optim.Adam(net.parameters(), lr=learning_rate)
+    opt = torch.optim.Adam(net.parameters(), lr=G['lr'])
     start = time()
     for k in range(steps):
         net.train()
@@ -475,8 +449,14 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
                 
         if k % 1000 == 0:
             print('Iteration', k,'|', 'Cost:',loss.detach().numpy(), '|', 'Tol:', costs[-1]/costs[0])
-            if np.abs(costs[-1]/costs[0])< G['tol']:
-                G['end'] = True
+            plt.plot(costs)
+            plt.yscale('log')
+            plt.show()
+            _,Peq,_,_ = FWD(G,bounds)
+            plt.imshow(Peq.reshape(nx,ny,order = 'F').T,origin = 'lower',aspect = 'auto')
+            plt.show()
+            # if np.abs(costs[-1]/costs[0])< G['tol']:
+            #     G['end'] = True
     
     
         if k%G['plotevery'] == 0 and k!= 0:
@@ -493,7 +473,6 @@ def traj_ours(TIME,name,seed):#input the desired wall clock training time and th
 
     # end = time()
     G['dt'] = .01
-    G['TSMax'] = 1e6
     G['IC'] = np.array([ 0.84144155, -1.08920043])
     ysn = dynamics(G)
     plt.scatter(ysn[:,0],ysn[:,1],c = 'r')
